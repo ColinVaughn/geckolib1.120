@@ -15,27 +15,28 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import software.bernie.geckolib.animatable.client.RenderProvider;
 
-/**
- * Render hook for injecting GeckoLib's armor rendering functionalities
- */
+
 @Mixin(value = HumanoidArmorLayer.class, priority = 700)
 public abstract class MixinHumanoidArmorLayer<T extends LivingEntity, A extends HumanoidModel<T>> {
-    @Unique
-    private LivingEntity gl_storedEntity;
-    @Unique
-    private EquipmentSlot gl_storedSlot;
-    @Unique
-    private ItemStack gl_storedItemStack;
+	@Unique
+	private LivingEntity gl_storedEntity;
+	@Unique
+	private EquipmentSlot gl_storedSlot;
+	@Unique
+	private ItemStack gl_storedItemStack;
+	private A humanoidModel; // Declare the humanoidModel field here
 
-    @Inject(method = "renderArmorPiece", at = @At(value = "HEAD"))
-    public void armorModelHook(PoseStack poseStack, MultiBufferSource multiBufferSource, T livingEntity, EquipmentSlot equipmentSlot, int i, A humanoidModel, CallbackInfo ci){
-        this.gl_storedEntity = livingEntity;
-        this.gl_storedSlot = equipmentSlot;
-        this.gl_storedItemStack = livingEntity.getItemBySlot(equipmentSlot);
-    }
+	@Inject(method = "renderArmorPiece", at = @At(value = "HEAD"))
+	public void armorModelHook(PoseStack poseStack, MultiBufferSource multiBufferSource, T livingEntity, EquipmentSlot equipmentSlot, int i, A humanoidModel, CallbackInfo ci) {
+		this.gl_storedEntity = livingEntity;
+		this.gl_storedSlot = equipmentSlot;
+		this.gl_storedItemStack = livingEntity.getItemBySlot(equipmentSlot);
+		this.humanoidModel = humanoidModel; // Assign the humanoidModel parameter to the field
+	}
 
-    @ModifyArg(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;ZLnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), index = 5)
-    public A injectArmor(A humanoidModel){
-        return (A)RenderProvider.of(this.gl_storedItemStack).getGenericArmorModel(this.gl_storedEntity, this.gl_storedItemStack, this.gl_storedSlot, (HumanoidModel<LivingEntity>) humanoidModel);
-    }
+	@ModifyArg(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), index = 5)
+	public boolean injectArmor(boolean par6) {
+		RenderProvider.of(this.gl_storedItemStack).getGenericArmorModel(this.gl_storedEntity, this.gl_storedItemStack, this.gl_storedSlot, (HumanoidModel<LivingEntity>) humanoidModel);
+		return true;
+	}
 }

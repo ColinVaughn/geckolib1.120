@@ -87,7 +87,7 @@ public class RaceCarEntity extends Animal implements GeoEntity {
 
 	// Adjust the rider's position while riding
 	@Override
-	public void positionRider(Entity entity) {
+	protected void positionRider(Entity entity, Entity.MoveFunction moveFunction) {
 		super.positionRider(entity);
 
 		if (entity instanceof LivingEntity passenger) {
